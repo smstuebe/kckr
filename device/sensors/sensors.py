@@ -7,6 +7,11 @@ from loudness import LoudnessValue
 
 # argparse
 
+
+import ptvsd
+ptvsd.enable_attach(address=('192.168.178.27', 1337), redirect_output=True)
+ptvsd.wait_for_attach()
+
 class SensorValues:
     def __init__(self):
         self.timestamp = 0
@@ -16,19 +21,23 @@ class SensorValues:
         self.occupied = False
         self.loudness = LoudnessValue()
 
-occupation = Occupation(6)
-air = Air(7)
+lock = threading.Lock()
+occupation = Occupation(6, lock)
+air = Air(7, lock)
 
 try:
-    occupation.run()
-    air.run()
+    occupation.start()
+    air.start()
 
     while True:
 
-        sleep(1) 
+        print("Occupied     %s" % (occupation.isOccupied))
+        if(air.hasValues()):
+            print("Temperature  %.02f°C" % (air.temperature))
+            print("Humidity     %.02f%%" % (air.humidity))
 
-# when pressing CTRL-C
+        sleep(1)
+
 except KeyboardInterrupt:
-    # stop gathering data
     occupation.stop()
     air.stop()

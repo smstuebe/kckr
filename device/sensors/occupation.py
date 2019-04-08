@@ -2,16 +2,18 @@ import threading
 from time import sleep
 import collections
 import numpy
+import grovepi
 
 class Occupation(threading.Thread):
-    def __init__(self, motionSensorDigitalPort, debugging=False):
+    def __init__(self, motionSensorDigitalPort, lock, debugging=False):
         super(Occupation, self).__init__(name="Occupation detection")
         self.pollingDelay = 0.5
         self.isOccupied = False
         self.motionSensorDigitalPort = motionSensorDigitalPort
+        self.lock = lock
         self.event_stopper = threading.Event()
 
-        bufferSize = 5 / self.pollingDelay
+        bufferSize = int(5 / self.pollingDelay)
         self.buffer = collections.deque(numpy.zeros(
             bufferSize, dtype=numpy.int), bufferSize)
 
@@ -24,7 +26,9 @@ class Occupation(threading.Thread):
 
         while not self.event_stopper.is_set():
             try:
-                motion = grovepi.digitalRead(self.motionSensorDigitalPort)
+                with self.lock:
+                    motion = grovepi.digitalRead(self.motionSensorDigitalPort)
+
                 if motion == 0 or motion == 1:
                     self.buffer.append(motion)
 
@@ -41,6 +45,8 @@ class Occupation(threading.Thread):
             # intented to catch NaN errors
             except RuntimeWarning as error:
                 print(str(error))
+            except:
+                print("some exception, ignored it :P")
 
             finally:
                 sleep(self.pollingDelay)
