@@ -26,12 +26,17 @@ https://marketplace.visualstudio.com/items?itemName=MicrosoftIoT.WindowsIoTCoreP
 
 # Install
 
-sudo apt update && sudo apt install raspberrypi-ui-mods
+sudo apt install raspberrypi-ui-mods
 
 https://www.raspifun.de/viewtopic.php?t=4
 
-sudo apt-get install git 
+sudo apt update
+sudo apt upgrade
+python3 -m pip install --upgrade pip
+
+sudo apt install git 
 sudo apt --fix-broken install
+
 https://www.dexterindustries.com/GrovePi/get-started-with-the-grovepi/setting-software/
 
 https://github.com/DexterInd/GrovePi
@@ -43,11 +48,7 @@ sudo git clone https://github.com/DexterInd/GrovePi
 sudo ./install.sh
 sudo shutdown -r now
 
-python3 -m pip install --upgrade pip
-
 bash firmware_update.sh
-
-
 
 # Remote debugging
 

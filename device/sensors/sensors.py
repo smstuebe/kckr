@@ -3,7 +3,7 @@ from time import sleep
 import collections
 from occupation import Occupation
 from air import Air
-from loudness import LoudnessValue
+from loudness import Loudness
 
 # argparse
 
@@ -19,15 +19,16 @@ class SensorValues:
         self.humidity = 0
         self.light = 0
         self.occupied = False
-        self.loudness = LoudnessValue()
 
 lock = threading.Lock()
 occupation = Occupation(6, lock)
 air = Air(7, lock)
+loudness = Loudness(1, lock)
 
 try:
     occupation.start()
     air.start()
+    loudness.start()
 
     while True:
 
@@ -41,3 +42,7 @@ try:
 except KeyboardInterrupt:
     occupation.stop()
     air.stop()
+    loudness.stop()
+
+for entry in loudness.history:
+    print("{time:07}: {value: >3}".format(time=entry[0], value=entry[1]))
