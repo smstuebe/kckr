@@ -18,7 +18,7 @@ class Loudness(threading.Thread):
         self.stoppedEvent.set()
         self.join()
 
-    def run(self): 
+    def run(self):
         startTime = datetime.now()
         self.history = []
         while not self.stoppedEvent.is_set():
@@ -29,12 +29,8 @@ class Loudness(threading.Thread):
                 timeStamp = int((datetime.now() - startTime).total_seconds() * 1000)
                 self.history.append((timeStamp, loudness))
 
-            except IOError:
-                print("[loudness sensor]: IO error")
-            except RuntimeWarning as error:
-                print("[loudness sensor]: ", str(error))
             except BaseException as ex:
-                print("[loudness sensor]: ", str(ex))
+                print("[loudness] " + str(ex), file=sys.stderr)
 
             finally:
                 sleep(self.pollingDelay)

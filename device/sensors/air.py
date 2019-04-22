@@ -1,7 +1,7 @@
 import threading
 from time import sleep
-import collections
 import math
+import sys
 import grovepi
 
 class Air(threading.Thread):
@@ -18,26 +18,19 @@ class Air(threading.Thread):
         self.event_stopper.set()
         self.join()
 
-    def run(self):     
+    def run(self):
+        sleep(2)
         while not self.event_stopper.is_set():
             try:
                 with self.lock:
-                    [temp,humidity] = grovepi.dht(self.tempSensorDigitalPort, 1)
-                  
-                if math.isnan(temp) == False and math.isnan(humidity) == False:
+                    [temp, humidity] = grovepi.dht(self.tempSensorDigitalPort, 1)
+
+                if math.isnan(temp) is False and math.isnan(humidity) is False:
                     self.temperature = temp
                     self.humidity = humidity
 
-            # in case we have an IO error
-            except IOError:
-                print("[dht sensor][we've got an IO error]")
-
-            # intented to catch NaN errors
-            except RuntimeWarning as error:
-                print(str(error))
-            except:
-                print("some exception, ignored it :P")
-
+            except BaseException as ex:
+                print("[air] " + str(ex), file=sys.stderr)
             finally:
                 sleep(self.pollingDelay)
 

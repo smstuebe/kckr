@@ -2,6 +2,7 @@ import threading
 from time import sleep
 import collections
 import numpy
+import sys
 import grovepi
 
 class Occupation(threading.Thread):
@@ -13,7 +14,7 @@ class Occupation(threading.Thread):
         self.lock = lock
         self.event_stopper = threading.Event()
 
-        bufferSize = int(5 / self.pollingDelay)
+        bufferSize = int(15 / self.pollingDelay)
         self.buffer = collections.deque(numpy.zeros(
             bufferSize, dtype=numpy.int), bufferSize)
 
@@ -36,17 +37,10 @@ class Occupation(threading.Thread):
                 if self.isOccupied and mean <= 1 / len(self.buffer):
                     self.isOccupied = False
                 elif not self.isOccupied:
-                    self.isOccupied = mean >= 0.5
+                    self.isOccupied = bool(mean >= 0.3)
 
-            # in case we have an IO error
-            except IOError:
-                print("[occupation sensor][we've got an IO error]")
-
-            # intented to catch NaN errors
-            except RuntimeWarning as error:
-                print(str(error))
-            except:
-                print("some exception, ignored it :P")
+            except BaseException as ex:
+                print("[occupation] " + str(ex), file=sys.stderr)
 
             finally:
                 sleep(self.pollingDelay)

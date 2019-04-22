@@ -26,29 +26,16 @@ https://marketplace.visualstudio.com/items?itemName=MicrosoftIoT.WindowsIoTCoreP
 
 # Install
 
+sudo chmod +x setup.sh
+sudo ./setup
+
+pitfall: check for \r\n instead of \n
+
 sudo apt install raspberrypi-ui-mods
 
 https://www.raspifun.de/viewtopic.php?t=4
 
-sudo apt update
-sudo apt upgrade
-python3 -m pip install --upgrade pip
-
-sudo apt install git 
-sudo apt --fix-broken install
-
 https://www.dexterindustries.com/GrovePi/get-started-with-the-grovepi/setting-software/
-
-https://github.com/DexterInd/GrovePi
-curl -kL dexterindustries.com/update_grovepi | bash
-
-
-
-sudo git clone https://github.com/DexterInd/GrovePi
-sudo ./install.sh
-sudo shutdown -r now
-
-bash firmware_update.sh
 
 # Remote debugging
 
@@ -85,4 +72,3 @@ Config in `launch.json`
 
 **Issue:** Can't set breakpoint :( https://github.com/Microsoft/ptvsd/issues/1059
 `pydev debugger: warning: trying to add breakpoint to file that does not exist`
-
