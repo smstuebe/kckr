@@ -3,11 +3,12 @@ from time import sleep
 import collections
 import requests
 import json
-from occupation import Occupation
-from air import Air
-from loudness import Loudness
+from sensors.occupation import Occupation
+from sensors.air import Air
+from sensors.loudness import Loudness
 import argparse
 import configparser
+from backend.backend import Backend
 
 parser = argparse.ArgumentParser(description="Kicker activity indicator.")
 parser.add_argument('--debug', action='store_const',
@@ -25,7 +26,9 @@ if args.debug:
     ptvsd.wait_for_attach()
 
 config = configparser.ConfigParser()
-config.read("/mnt/device/config.ini")  # TODO: make dynamic
+config.read("/mnt/device/config.ini")
+# TODO: make dynamic
+# TODO: validate
 
 print("Started kckr for location: %s" % (config["device"]["location"]))
 
@@ -33,6 +36,7 @@ lock = threading.Lock()
 occupation = Occupation(6, lock)
 air = Air(7, lock)
 loudness = Loudness(1, lock)
+backend = Backend(config)
 
 try:
     occupation.start()
@@ -49,24 +53,12 @@ try:
 
         if occupied != occupation.isOccupied:
             occupied = occupation.isOccupied
-            print("Occupation changed: %s" % (occupied))
-            url = "https://%s/api/InsertOccupation?code=%s" % (config["backend"]["fn-base-url"], config["backend"]["occupation-fn-key"])
-            requests.post(url, json={
-                "Location": config["device"]["location"],
-                "Occupied": occupation.isOccupied
-            })
+            backend.updateOccupation(occupied)
 
         sleep(1)
 
         if num == 15 and air.hasValues():
-            print("sending data")
-            url = "https://%s/api/InsertEnvironmentData?code=%s" % (config["backend"]["fn-base-url"], config["backend"]["environment-fn-key"])
-            requests.post(url, json={
-                "Location": config["device"]["location"],
-                "Occupied": occupation.isOccupied,
-                "Temperature": air.temperature,
-                "Humidity": air.humidity
-            })
+            backend.updateEnvironmentData(occupied, air.temperature, air.humidity)
             num = 0
 
 except KeyboardInterrupt:
