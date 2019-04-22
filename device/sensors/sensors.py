@@ -6,11 +6,19 @@ import json
 from occupation import Occupation
 from air import Air
 from loudness import Loudness
-# argparse
+import argparse
 
-import ptvsd
-#ptvsd.enable_attach(address=('192.168.178.27', 1337), redirect_output=True)
-# ptvsd.wait_for_attach()
+parser = argparse.ArgumentParser(description="Kicker activity indicator.")
+parser.add_argument('--debug', action='store_const',
+                    const=True, default=False,
+                    help='Listen to the debugger.')
+
+args = parser.parse_args()
+
+if args.debug:
+    import ptvsd
+    ptvsd.enable_attach(address=('192.168.178.27', 1337), redirect_output=True)
+    ptvsd.wait_for_attach()
 
 
 # class Game:
