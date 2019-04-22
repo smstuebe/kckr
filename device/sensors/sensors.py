@@ -12,6 +12,9 @@ parser = argparse.ArgumentParser(description="Kicker activity indicator.")
 parser.add_argument('--debug', action='store_const',
                     const=True, default=False,
                     help='Listen to the debugger.')
+parser.add_argument('--verbose', action='store_const',
+                    const=True, default=False,
+                    help='Verbose output mode.')
 
 args = parser.parse_args()
 
@@ -34,17 +37,28 @@ try:
     air.start()
     # loudness.start()
     num = 0
+    occupied = None
     while True:
         print("Occupied     %s" % (occupation.isOccupied))
         if air.hasValues():
             print("Temperature  %.02f°C" % (air.temperature))
             print("Humidity     %.02f%%" % (air.humidity))
-
         num += 1
+        
+        if occupied != occupation.isOccupied:
+            occupied = occupation.isOccupied
+            print("Occupation changed: %s" % (occupied))
+            requests.post("", json={
+                "Location": "MUC",
+                "Occupied": occupation.isOccupied
+            })
+
         sleep(1)
+
         if num == 15 and air.hasValues():
             print("sending data")
             requests.post("", json={
+                "Location": "MUC",
                 "Occupied": occupation.isOccupied,
                 "Temperature": air.temperature,
                 "Humidity": air.humidity

@@ -4,6 +4,7 @@ import collections
 import numpy
 import sys
 import grovepi
+import rx
 
 class Occupation(threading.Thread):
     def __init__(self, motionSensorDigitalPort, lock, debugging=False):

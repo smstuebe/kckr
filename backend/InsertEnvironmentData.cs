@@ -11,22 +11,24 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Kckr.Functions
 {
-    public class EnvironmentData
+    public class EnvironmentDataDto : DeviceDto
     {
         public bool Occupied { get; set; }
         public double Temperature { get; set; }
         public double Humidity { get; set; }
     }
 
-    public class EnvironmentDataEntity : EnvironmentData
+    public class EnvironmentDataEntity : ReverseOrderedDeviceEntity
     {
-        public string PartitionKey { get; }
-        public string RowKey { get; }
+        public bool Occupied { get; set; }
+        public double Temperature { get; set; }
+        public double Humidity { get; set; }
 
-        public EnvironmentDataEntity()
+        public EnvironmentDataEntity(EnvironmentDataDto dto) : base(dto)
         {
-            PartitionKey = "environment";
-            RowKey = (DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks).ToString("D19");
+            Occupied = dto.Occupied;
+            Temperature = dto.Temperature;
+            Humidity = dto.Humidity;
         }
     }
 
@@ -39,17 +41,12 @@ namespace Kckr.Functions
             ILogger log)
         {
             var json = await req.ReadAsStringAsync();
-            var envData = JsonConvert.DeserializeObject<EnvironmentData>(json);
+            var envData = JsonConvert.DeserializeObject<EnvironmentDataDto>(json);
 
             var occupied = envData.Occupied ? "occupied" : "free";
-            log.LogInformation($"New Environment Data: {occupied} {envData.Temperature:F2}°C {envData.Humidity:F2}%");
+            log.LogInformation($"New Environment Data for {envData.Location}: {occupied} {envData.Temperature:F2}°C {envData.Humidity:F2}%");
 
-            return new EnvironmentDataEntity
-            {
-                Occupied = envData.Occupied,
-                Temperature = envData.Temperature,
-                Humidity = envData.Humidity
-            };
+            return new EnvironmentDataEntity(envData);
         }
     }
 }
