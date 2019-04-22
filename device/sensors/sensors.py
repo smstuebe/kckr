@@ -7,6 +7,7 @@ from occupation import Occupation
 from air import Air
 from loudness import Loudness
 import argparse
+import configparser
 
 parser = argparse.ArgumentParser(description="Kicker activity indicator.")
 parser.add_argument('--debug', action='store_const',
@@ -23,9 +24,10 @@ if args.debug:
     ptvsd.enable_attach(address=('192.168.178.27', 1337), redirect_output=True)
     ptvsd.wait_for_attach()
 
+config = configparser.ConfigParser()
+config.read("/mnt/device/config.ini")  # TODO: make dynamic
 
-# class Game:
-#    def __init__(self):
+print("Started kckr for location: %s" % (config["device"]["location"]))
 
 lock = threading.Lock()
 occupation = Occupation(6, lock)
@@ -44,12 +46,13 @@ try:
             print("Temperature  %.02f°C" % (air.temperature))
             print("Humidity     %.02f%%" % (air.humidity))
         num += 1
-        
+
         if occupied != occupation.isOccupied:
             occupied = occupation.isOccupied
             print("Occupation changed: %s" % (occupied))
-            requests.post("", json={
-                "Location": "MUC",
+            url = "https://%s/api/InsertOccupation?code=%s" % (config["backend"]["fn-base-url"], config["backend"]["occupation-fn-key"])
+            requests.post(url, json={
+                "Location": config["device"]["location"],
                 "Occupied": occupation.isOccupied
             })
 
@@ -57,8 +60,9 @@ try:
 
         if num == 15 and air.hasValues():
             print("sending data")
-            requests.post("", json={
-                "Location": "MUC",
+            url = "https://%s/api/InsertEnvironmentData?code=%s" % (config["backend"]["fn-base-url"], config["backend"]["environment-fn-key"])
+            requests.post(url, json={
+                "Location": config["device"]["location"],
                 "Occupied": occupation.isOccupied,
                 "Temperature": air.temperature,
                 "Humidity": air.humidity

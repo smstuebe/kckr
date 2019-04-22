@@ -22,7 +22,7 @@ http://www.moserware.com/2010/03/computing-your-skill.html
 https://www.microsoft.com/en-us/research/uploads/prod/2018/03/trueskill2.pdf
 https://marketplace.visualstudio.com/items?itemName=MicrosoftIoT.WindowsIoTCoreProjectTemplatesforVS15
 
-
+https://www.dexterindustries.com/howto/auto-run-python-programs-on-the-raspberry-pi/
 
 # Install
 

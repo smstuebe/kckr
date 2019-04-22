@@ -1,4 +1,5 @@
 argparse==1.4.0
+configparser==3.7.4
 numpy==1.15.2
 ptvsd==4.2.7
 requests==2.21.0
