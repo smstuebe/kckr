@@ -26,8 +26,10 @@ https://www.dexterindustries.com/howto/auto-run-python-programs-on-the-raspberry
 
 # Install
 
+```shell
 sudo chmod +x setup.sh
 sudo ./setup
+```
 
 pitfall: check for \r\n instead of \n
 
@@ -36,6 +38,10 @@ sudo apt install raspberrypi-ui-mods
 https://www.raspifun.de/viewtopic.php?t=4
 
 https://www.dexterindustries.com/GrovePi/get-started-with-the-grovepi/setting-software/
+
+# Setup
+
+copy `config.template.ini` to `config.ini` and set the config values.
 
 # Remote debugging
 
