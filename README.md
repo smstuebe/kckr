@@ -54,7 +54,7 @@ We don't want to copy the files over for each change we do. So we create a netwo
 
 ## Raspberry
 - make sure `sudo apt-get install cifs-utils` is installed
-- `sudo mount -t cifs //<dev-machine-ip>/kckr /mnt -o user=raspberry`
+- `sudo mount -t cifs //<dev-machine-ip>/kckr /mnt -o user=raspberry,password=<password>`
 
 ## VS Code
 - see: https://code.visualstudio.com/docs/python/debugging#_remote-debugging

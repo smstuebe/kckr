@@ -29,6 +29,7 @@ config = configparser.ConfigParser()
 config.read("/mnt/device/config.ini")
 # TODO: make dynamic
 # TODO: validate
+# TODO: make sensor ports configurable
 
 print("Started kckr for location: %s" % (config["device"]["location"]))
 
@@ -53,13 +54,13 @@ try:
 
         if occupied != occupation.isOccupied:
             occupied = occupation.isOccupied
-            backend.updateOccupation(occupied)
-
-        sleep(1)
+            backend.updateOccupation(occupied) 
 
         if num == 15 and air.hasValues():
             backend.updateEnvironmentData(occupied, air.temperature, air.humidity)
             num = 0
+
+        sleep(1)
 
 except KeyboardInterrupt:
     occupation.stop()
