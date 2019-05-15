@@ -3,11 +3,9 @@ from time import sleep
 import collections
 import requests
 import json
-from sensors.occupation import Occupation
-from sensors.air import Air
-from sensors.loudness import Loudness
 import argparse
 import configparser
+from sensors.sensors import Sensors
 from backend.backend import Backend
 
 parser = argparse.ArgumentParser(description="Kicker activity indicator.")
@@ -26,46 +24,41 @@ if args.debug:
     ptvsd.wait_for_attach()
 
 config = configparser.ConfigParser()
-config.read("/mnt/device/config.ini")
+config.read("config.ini")
 # TODO: make dynamic
 # TODO: validate
 # TODO: make sensor ports configurable
 
 print("Started kckr for location: %s" % (config["device"]["location"]))
 
-lock = threading.Lock()
-occupation = Occupation(6, lock)
-air = Air(7, lock)
-loudness = Loudness(1, lock)
+sensors = Sensors()
 backend = Backend(config)
 
 try:
-    occupation.start()
-    air.start()
-    # loudness.start()
     num = 0
     occupied = None
+    sensors.start()
+
     while True:
-        print("Occupied     %s" % (occupation.isOccupied))
-        if air.hasValues():
-            print("Temperature  %.02f°C" % (air.temperature))
-            print("Humidity     %.02f%%" % (air.humidity))
+        print("Occupied     %s" % (sensors.occupation.isOccupied))
+        if sensors.air.hasValues():
+            print("Temperature  %.02f°C" % (sensors.air.temperature))
+            print("Humidity     %.02f%%" % (sensors.air.humidity))
         num += 1
 
-        if occupied != occupation.isOccupied:
-            occupied = occupation.isOccupied
-            backend.updateOccupation(occupied) 
+        if occupied != sensors.occupation.isOccupied:
+            occupied = sensors.occupation.isOccupied
+            backend.updateOccupation(occupied)
 
-        if num == 15 and air.hasValues():
-            backend.updateEnvironmentData(occupied, air.temperature, air.humidity)
+        if num == 15 and sensors.air.hasValues():
+            backend.updateEnvironmentData(
+                occupied, sensors.air.temperature, sensors.air.humidity)
             num = 0
 
         sleep(1)
 
 except KeyboardInterrupt:
-    occupation.stop()
-    air.stop()
-    loudness.stop()
+    sensors.stop()
 
 # for entry in loudness.history:
 #    print("{time:07}: {value: >3}".format(time=entry[0], value=entry[1]))

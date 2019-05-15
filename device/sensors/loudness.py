@@ -5,32 +5,34 @@ import numpy
 import grovepi
 import sys
 
-class Loudness(threading.Thread):
-    def __init__(self, loudnessSensorAnalogPort, sensorLock, debugging=False):
-        super(Loudness, self).__init__(name="Loudness sensor")
-        self.pollingDelay = 0.2
+
+class Loudness:
+    def __init__(self, loudnessSensorAnalogPort, debugging=False):
+        self.msPerRead = 200
         self.loudnessSensorAnalogPort = loudnessSensorAnalogPort
-        self.sensorLock = sensorLock
-        self.stoppedEvent = threading.Event()
+        self.isActive = False
         self.history = []
+        self.startTime = None
 
-    def stop(self):
-        self.stoppedEvent.set()
-        self.join()
-
-    def run(self):
-        startTime = datetime.now()
+    def reset(self):
         self.history = []
-        while not self.stoppedEvent.is_set():
-            try:
-                with self.sensorLock:
-                    loudness = grovepi.analogRead(self.loudnessSensorAnalogPort)
+        self.startTime = datetime.now()
 
-                timeStamp = int((datetime.now() - startTime).total_seconds() * 1000)
-                self.history.append((timeStamp, loudness))
+    def setActive(self, active):
+        if active:
+            self.reset()
 
-            except BaseException as ex:
-                print("[loudness] " + str(ex), file=sys.stderr)
+        self.isActive = active
 
-            finally:
-                sleep(self.pollingDelay)
+    def update(self, milliseconds):
+        if not self.isActive or milliseconds % self.msPerRead > 0:
+            return
+
+        try:
+            loudness = grovepi.analogRead(self.loudnessSensorAnalogPort)
+
+            #timeStamp = int((datetime.now() - startTime).total_seconds() * 1000)
+            self.history.append((datetime.now(), loudness))
+
+        except BaseException as ex:
+            print("[loudness] " + str(ex), file=sys.stderr)

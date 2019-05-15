@@ -6,42 +6,33 @@ import sys
 import grovepi
 import rx
 
-class Occupation(threading.Thread):
-    def __init__(self, motionSensorDigitalPort, lock, debugging=False):
-        super(Occupation, self).__init__(name="Occupation detection")
-        self.pollingDelay = 0.5
+
+class Occupation:
+    def __init__(self, motionSensorDigitalPort, debugging=False):
+        self.msPerRead = 500  # every 0.5 sec
         self.isOccupied = False
         self.motionSensorDigitalPort = motionSensorDigitalPort
-        self.lock = lock
-        self.event_stopper = threading.Event()
 
-        bufferSize = int(15 / self.pollingDelay)
+        bufferSize = int(15000 / self.msPerRead)  # 15 sec
         self.buffer = collections.deque(numpy.zeros(
             bufferSize, dtype=numpy.int), bufferSize)
-
-    def stop(self):
-        self.event_stopper.set()
-        self.join()
-
-    def run(self):
         grovepi.pinMode(self.motionSensorDigitalPort, "INPUT")
 
-        while not self.event_stopper.is_set():
-            try:
-                with self.lock:
-                    motion = grovepi.digitalRead(self.motionSensorDigitalPort)
+    def update(self, milliseconds):
+        if milliseconds % self.msPerRead > 0:
+            return
 
-                if motion == 0 or motion == 1:
-                    self.buffer.append(motion)
+        try:
+            motion = grovepi.digitalRead(self.motionSensorDigitalPort)
 
-                mean = numpy.average(self.buffer)
-                if self.isOccupied and mean <= 1 / len(self.buffer):
-                    self.isOccupied = False
-                elif not self.isOccupied:
-                    self.isOccupied = bool(mean >= 0.3)
+            if motion == 0 or motion == 1:
+                self.buffer.append(motion)
 
-            except BaseException as ex:
-                print("[occupation] " + str(ex), file=sys.stderr)
+            mean = numpy.average(self.buffer)
+            if self.isOccupied and mean <= 1 / len(self.buffer):
+                self.isOccupied = False
+            elif not self.isOccupied:
+                self.isOccupied = bool(mean >= 0.3)
 
-            finally:
-                sleep(self.pollingDelay)
+        except BaseException as ex:
+            print("[occupation] " + str(ex), file=sys.stderr)
